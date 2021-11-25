@@ -49,17 +49,21 @@ class Acquisition:
         self.recording_txt.set("'Start Acquisition' to start acquire!")
         ttk.Label(mainframe,textvariable=self.recording_txt, padding="10 5 10 5",font=("Arial",15)).grid(column=1,row=5,sticky=S)
 
+        self.inlet = getStream()
         
     def start(self):
-        if not (self.recording.get()):
-            print("Acquisition Started !")
-            self.recording_txt.set("Recording " + self.selected.get())
-            self.recording.set(True)
-        
+        if (self.recording.get()):
+            return
+        print("Acquisition Started !")
+        self.recording_txt.set("Recording " + self.selected.get())
+        self.recording.set(True)
+        sample,t0 = self.inlet.pull_sample()
+        self.Signals = [sample]
+        print(sample,t0)
     
     def stop(self):
         print("Acquisition Stopped !")
-        self.recording_txt.set("Not recording")
+        self.recording_txt.set("Acquisition done")
         self.recording.set(False)
         
         

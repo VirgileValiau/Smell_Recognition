@@ -28,10 +28,11 @@ m.mainloop()
 '''
 while run:
     
-    if n_iter%signal_sampling == 0 and registration: 
+    if n_iter%signal_sampling == 0 and registration:
         Signal_unit ,t = inlet.pull_sample()
         Signals.append(Signal_unit)
         time.append(t-t0)
+        print('hello')
       
     if keyboard.is_pressed("enter") and not registration:
         registration = True
