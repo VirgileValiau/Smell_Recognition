@@ -15,6 +15,20 @@ class Acquisition:
     
     def __init__(self,root):
         
+        self.selected = StringVar()
+        self.selected.set(Smells[0])
+        
+        self.recording = BooleanVar()
+        self.recording.set(False)
+        
+        self.recording_txt = StringVar()
+        self.recording_txt.set("'Start Acquisition' to start acquire!")
+        
+        self.recording_smell = StringVar()
+        self.recording_smell.set("Nothing")
+        
+        self.inlet = getStream()
+        
         root.title("Acquisition EEG")
         
         mainframe = ttk.Frame(root,padding="15 15 15 15")
@@ -22,8 +36,7 @@ class Acquisition:
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
         
-        self.selected = StringVar()
-        self.selected.set(Smells[0])
+        
         ttk.Label(mainframe,text="Smells :",borderwidth=2, relief="solid", padding="10 5 10 5").grid(column=1,row=1,sticky=S)
         
         smells_selection = ttk.Frame(mainframe,padding = "10 10 10 10")
@@ -42,14 +55,9 @@ class Acquisition:
         
         ttk.Button(StartAndStop,text="Start Acquisition",command=self.start).grid(column=1,row=1,padx = 30)
         ttk.Button(StartAndStop,text="Stop Acquisition",command=self.stop).grid(column=2,row=1,padx = 30)
-        
-        self.recording = BooleanVar()
-        self.recording.set(False)
-        self.recording_txt = StringVar()
-        self.recording_txt.set("'Start Acquisition' to start acquire!")
         ttk.Label(mainframe,textvariable=self.recording_txt, padding="10 5 10 5",font=("Arial",15)).grid(column=1,row=5,sticky=S)
 
-        self.inlet = getStream()
+        
         
     def start(self):
         if (self.recording.get()):
@@ -57,16 +65,36 @@ class Acquisition:
         print("Acquisition Started !")
         self.recording_txt.set("Recording " + self.selected.get())
         self.recording.set(True)
-        sample,t0 = self.inlet.pull_sample()
+        sample,self.t0 = self.inlet.pull_sample()
         self.Signals = [sample]
-        print(sample,t0)
+        self.timeStamps = [0.]
+        self.recording_smell.set(self.selected.get())
     
     def stop(self):
         print("Acquisition Stopped !")
         self.recording_txt.set("Acquisition done")
         self.recording.set(False)
+        self.Signals = np.array(self.Signals)
+        print(self.Signals)
+        np.savetxt('../Smell_Recognition/DATA/trials/' + self.recording_smell.get() + '.txt', np.c_[self.timeStamps,self.Signals], delimiter=' ')
+        self.recording_smell.set("Nothing")
+
         
-        
+    def addSignal(self,s):
+        self.Signals.append(s)
+    
+    def addTimeStamp(self,t):
+        self.timeStamps.append(t)
+            
+def pull_sample_or_not(acqui):
+    if acqui.recording.get():
+        signal,t = acqui.inlet.pull_sample()
+        acqui.addSignal(signal)
+        acqui.addTimeStamp(t-acqui.t0)
+    root.after(1,lambda: pull_sample_or_not(acqui))
+
+
 root=Tk()
-Acquisition(root)
+acqui = Acquisition(root)
+root.after(1, lambda: pull_sample_or_not(acqui))
 root.mainloop()

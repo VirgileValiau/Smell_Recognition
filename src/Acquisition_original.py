@@ -32,7 +32,6 @@ while run:
         Signal_unit ,t = inlet.pull_sample()
         Signals.append(Signal_unit)
         time.append(t-t0)
-        print('hello')
       
     if keyboard.is_pressed("enter") and not registration:
         registration = True
@@ -48,9 +47,13 @@ while run:
         
                    
 time = np.array(time)
+
 Signals = np.array(Signals)
 
-np.savetxt('eeg_unicorn_basics/raw_signals/essai.txt', np.c_[time,Signals], delimiter=' ')
+print(time)
+
+
+np.savetxt('../Smell_Recognition/DATA/trials/try.txt', np.c_[time,Signals], delimiter=' ')
 
 #for s in Signals.T:
 #    plt.plot(time,s)
