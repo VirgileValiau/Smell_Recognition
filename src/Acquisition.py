@@ -3,9 +3,7 @@ from tkinter import ttk
 import numpy as np
 from pylsl import StreamInlet, resolve_stream
 
-Smells = ["Smell 1","Smell 2","Smell 3","Smell 4",
-          "Smell 5","Smell 6","Smell 7","Smell 8",
-          "Smell 9","Smell 10","Smell 11","Smell 12"]
+Smells = ["smell " + str(i+1) for i in range(12)]
 
 def getStream():
     print('looking for streams...')
@@ -24,7 +22,8 @@ class Acquisition:
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
         
-        self.selected=Smells[0]
+        self.selected = StringVar()
+        self.selected.set(Smells[0])
         ttk.Label(mainframe,text="Smells :",borderwidth=2, relief="solid", padding="10 5 10 5").grid(column=1,row=1,sticky=S)
         
         smells_selection = ttk.Frame(mainframe,padding = "10 10 10 10")
@@ -32,7 +31,7 @@ class Acquisition:
         
         mainframe.grid(column=0, row=0, sticky=(N,W,E,S))
         
-        ttk.Label(mainframe,textvariable =self.selected, padding="10 5 10 5",font=("Arial",20)).grid(column=1,row=3,sticky=S)
+        ttk.Label(mainframe,textvariable = self.selected, padding="10 5 10 5",font=("Arial",20)).grid(column=1,row=3,sticky=S)
         
         for s in Smells:
             i=Smells.index(s)
@@ -44,12 +43,25 @@ class Acquisition:
         ttk.Button(StartAndStop,text="Start Acquisition",command=self.start).grid(column=1,row=1,padx = 30)
         ttk.Button(StartAndStop,text="Stop Acquisition",command=self.stop).grid(column=2,row=1,padx = 30)
         
+        self.recording = BooleanVar()
+        self.recording.set(False)
+        self.recording_txt = StringVar()
+        self.recording_txt.set("'Start Acquisition' to start acquire!")
+        ttk.Label(mainframe,textvariable=self.recording_txt, padding="10 5 10 5",font=("Arial",15)).grid(column=1,row=5,sticky=S)
+
         
     def start(self):
-        print("Acquisition Started !")
+        if not (self.recording.get()):
+            print("Acquisition Started !")
+            self.recording_txt.set("Recording " + self.selected.get())
+            self.recording.set(True)
+        
     
     def stop(self):
         print("Acquisition Stopped !")
+        self.recording_txt.set("Not recording")
+        self.recording.set(False)
+        
         
 root=Tk()
 Acquisition(root)
