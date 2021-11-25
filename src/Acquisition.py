@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import ttk
 import numpy as np
 from pylsl import StreamInlet, resolve_stream
+import matplotlib.pyplot as plt
+import pandas as pd
 
 Smells = ["smell " + str(i+1) for i in range(12)]
 
@@ -71,13 +73,25 @@ class Acquisition:
         self.recording_smell.set(self.selected.get())
     
     def stop(self):
-        print("Acquisition Stopped !")
+        
         self.recording_txt.set("Acquisition done")
         self.recording.set(False)
-        self.Signals = np.array(self.Signals)
-        print(self.Signals)
-        np.savetxt('../Smell_Recognition/DATA/trials/' + self.recording_smell.get() + '.txt', np.c_[self.timeStamps,self.Signals], delimiter=' ')
         self.recording_smell.set("Nothing")
+        
+        self.Signals = np.array(self.Signals)
+        
+        col =["time"] + ["Electrode " + str(i) for i in range(len(self.Signals.T))]
+        
+        df = pd.DataFrame(np.c_[self.timeStamps,self.Signals],columns = col)
+        df.to_csv('../Smell_Recognition/DATA/trials/' + self.recording_smell.get() + '.csv')
+        
+        self.plot(self.Signals,self.timeStamps)
+        
+    def plot(self,signals,time):
+        plt.figure()
+        for i,s in enumerate(signals.T) :
+            plt.plot(time,s+5*i)
+        plt.show()
 
         
     def addSignal(self,s):
