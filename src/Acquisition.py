@@ -76,7 +76,6 @@ class Acquisition:
         
         self.recording_txt.set("Acquisition done")
         self.recording.set(False)
-        self.recording_smell.set("Nothing")
         
         self.Signals = np.array(self.Signals)
         
@@ -86,6 +85,9 @@ class Acquisition:
         df.to_csv('../Smell_Recognition/DATA/trials/' + self.recording_smell.get() + '.csv')
         
         self.plot(self.Signals,self.timeStamps)
+        
+        
+        self.recording_smell.set("Nothing")
         
     def plot(self,signals,time):
         plt.figure()
@@ -105,10 +107,10 @@ def pull_sample_or_not(acqui):
         signal,t = acqui.inlet.pull_sample()
         acqui.addSignal(signal)
         acqui.addTimeStamp(t-acqui.t0)
-    root.after(1,lambda: pull_sample_or_not(acqui))
+    root.after(2,lambda: pull_sample_or_not(acqui))
 
 
 root=Tk()
 acqui = Acquisition(root)
-root.after(1, lambda: pull_sample_or_not(acqui))
+root.after(2, lambda: pull_sample_or_not(acqui))
 root.mainloop()
