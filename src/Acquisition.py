@@ -5,8 +5,8 @@ from pylsl import StreamInlet, resolve_stream
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import time
 
-Smells = ["smell " + str(i+1) for i in range(12)]
 
 def getStream():
     print('looking for streams...')
@@ -16,7 +16,7 @@ def getStream():
 
 class Acquisition:
     
-    def __init__(self,root):
+    def __init__(self,root,Smells,auto_Stop = True):
         
         data_PATH = '../Smell_Recognition/DATA/'
         self.save_dir = self.create_new_dir(data_PATH)
@@ -57,10 +57,15 @@ class Acquisition:
             ttk.Radiobutton(smells_selection, text=str(i+1)+". "+s, variable = self.selected, value = s).grid(column=i%4, row=i//4, sticky=W)
         
         StartAndStop = ttk.Frame(mainframe,padding = "10 10 10 10")
-        StartAndStop.grid(column=1,row=4,sticky=(N,W,E,S))
+        StartAndStop.grid(column=1,row=4,sticky=S)
         
-        ttk.Button(StartAndStop,text="Start Acquisition",command=self.start).grid(column=1,row=1,padx = 30)
-        ttk.Button(StartAndStop,text="Stop Acquisition",command=self.stop).grid(column=2,row=1,padx = 30)
+        if not auto_Stop:
+            ttk.Button(StartAndStop,text="Start Acquisition",command=self.start).grid(column=1,row=1,padx = 20)
+            ttk.Button(StartAndStop,text="Stop Acquisition",command=self.stop).grid(column=2,row=1,padx = 20)
+        else:
+            ttk.Button(StartAndStop,text="Start Acquisition",command=self.start_and_stop).grid(column = 1,row=1,sticky = E)
+            
+            
         ttk.Label(mainframe,textvariable=self.recording_txt, padding="10 5 10 5",font=("Arial",15)).grid(column=1,row=5,sticky=S)
 
         
@@ -76,6 +81,15 @@ class Acquisition:
         self.timeStamps = [0.]
         self.recording_smell.set(self.selected.get())
     
+    def start_and_stop(self):
+        self.start()
+        t0 = time.time()
+        while (time.time() - t0) < 2.0 :
+            signal,t = self.inlet.pull_sample()
+            self.addSignal(signal)
+            self.addTimeStamp(t-self.t0)
+        self.stop()
+    
     def stop(self):
         
         self.recording_txt.set("Acquisition done")
@@ -88,6 +102,7 @@ class Acquisition:
         self.plot(self.Signals,self.timeStamps)
         
         self.recording_smell.set("Nothing")
+        print("Acquisition stopped !")
         
     def create_file(self):
         col =["time"] + ["Electrode " + str(i+1) for i in range(len(self.Signals.T))]
@@ -127,7 +142,9 @@ def pull_sample_or_not(acqui):
     root.after(2,lambda: pull_sample_or_not(acqui))
 
 
+
+odors = ["smell " + str(i+1) for i in range(12)]
 root=Tk()
-acqui = Acquisition(root)
+acqui = Acquisition(root,odors)
 root.after(2, lambda: pull_sample_or_not(acqui))
 root.mainloop()
