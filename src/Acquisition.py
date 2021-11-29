@@ -4,6 +4,7 @@ import numpy as np
 from pylsl import StreamInlet, resolve_stream
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
 
 Smells = ["smell " + str(i+1) for i in range(12)]
 
@@ -16,6 +17,9 @@ def getStream():
 class Acquisition:
     
     def __init__(self,root):
+        
+        data_PATH = '../Smell_Recognition/DATA/'
+        self.save_dir = self.create_new_dir(data_PATH)
         
         self.selected = StringVar()
         self.selected.set(Smells[0])
@@ -79,16 +83,29 @@ class Acquisition:
         
         self.Signals = np.array(self.Signals)
         
-        col =["time"] + ["Electrode " + str(i) for i in range(len(self.Signals.T))]
-        
-        df = pd.DataFrame(np.c_[self.timeStamps,self.Signals],columns = col)
-        df.to_csv('../Smell_Recognition/DATA/trials/' + self.recording_smell.get() + '.csv')
+        self.create_file()
         
         self.plot(self.Signals,self.timeStamps)
         
-        
         self.recording_smell.set("Nothing")
         
+    def create_file(self):
+        col =["time"] + ["Electrode " + str(i+1) for i in range(len(self.Signals.T))]
+        
+        df = pd.DataFrame(np.c_[self.timeStamps,self.Signals],columns = col)
+    
+        df.to_csv(self.save_dir + self.recording_smell.get() + '.csv')  
+    
+    def create_new_dir(self,path):
+        exist = True
+        i=0
+        while(exist and i<100):
+            if not os.path.isdir(path + 'subject_' + str(i)):
+                os.makedirs(path + 'subject_' + str(i))
+                exist = False
+            i +=1
+        return path + 'subject_' + str(i-1) + '/'
+    
     def plot(self,signals,time):
         plt.figure()
         for i,s in enumerate(signals.T) :
