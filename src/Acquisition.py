@@ -83,11 +83,12 @@ class Acquisition:
     
     def start_and_stop(self):
         self.start()
-        t0 = time.time()
-        while (time.time() - t0) < 2.0 :
+        t = self.t0
+        while (t - self.t0) < 2.0 :
             signal,t = self.inlet.pull_sample()
             self.addSignal(signal)
             self.addTimeStamp(t-self.t0)
+        print(len(self.Signals))
         self.stop()
     
     def stop(self):
