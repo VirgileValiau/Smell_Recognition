@@ -12,6 +12,7 @@ def getStream():
     return StreamInlet(streams[0])
 
 
+
 inlet = getStream()
 signal_sampling=500
 

@@ -16,7 +16,9 @@ def getStream():
 
 class Acquisition:
     
-    def __init__(self,root,Smells,auto_Stop = True):
+    def __init__(self,root,Smells,auto_Stop = True,acqui_time=2):
+        
+        self.acqui_time = acqui_time
         
         data_PATH = '../Smell_Recognition/DATA/'
         self.save_dir = self.create_new_dir(data_PATH)
@@ -33,7 +35,6 @@ class Acquisition:
         self.recording_smell = StringVar()
         self.recording_smell.set("Nothing")
         
-        self.inlet = getStream()
         
         root.title("Acquisition EEG")
         
@@ -71,24 +72,25 @@ class Acquisition:
         
         
     def start(self):
+        self.inlet = getStream()
         if (self.recording.get()):
             return
         print("Acquisition Started !")
         self.recording_txt.set("Recording " + self.selected.get())
         self.recording.set(True)
         sample,self.t0 = self.inlet.pull_sample()
-        self.Signals = [sample]
-        self.timeStamps = [0.]
+        self.Signals = []
+        self.timeStamps = []
         self.recording_smell.set(self.selected.get())
     
     def start_and_stop(self):
         self.start()
         t = self.t0
-        while (t - self.t0) < 2.0 :
+        while (t - self.t0) < self.acqui_time :
             signal,t = self.inlet.pull_sample()
-            self.addSignal(signal)
+            t += self.inlet.time_correction()
+            self.addSignal(signal[:8])
             self.addTimeStamp(t-self.t0)
-        print(len(self.Signals))
         self.stop()
     
     def stop(self):
@@ -125,8 +127,9 @@ class Acquisition:
     def plot(self,signals,time):
         plt.figure()
         for i,s in enumerate(signals.T) :
-            plt.plot(time,s+5*i)
-        plt.show()
+            plt.plot(time,label="Electrode n°" + str(i+1))
+            plt.legend()
+            plt.show()
 
         
     def addSignal(self,s):
@@ -138,14 +141,14 @@ class Acquisition:
 def pull_sample_or_not(acqui):
     if acqui.recording.get():
         signal,t = acqui.inlet.pull_sample()
-        acqui.addSignal(signal)
+        acqui.addSignal(signal[:8])
         acqui.addTimeStamp(t-acqui.t0)
-    root.after(2,lambda: pull_sample_or_not(acqui))
+    root.after(1,lambda: pull_sample_or_not(acqui))
 
 
 
 odors = ["smell " + str(i+1) for i in range(12)]
 root=Tk()
-acqui = Acquisition(root,odors)
-root.after(2, lambda: pull_sample_or_not(acqui))
+acqui = Acquisition(root,odors,auto_Stop=True,acqui_time = 10)
+root.after(1, lambda: pull_sample_or_not(acqui))
 root.mainloop()
