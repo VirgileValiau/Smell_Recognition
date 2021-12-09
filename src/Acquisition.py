@@ -97,6 +97,7 @@ class Acquisition:
         
         self.recording_txt.set("Acquisition done")
         self.recording.set(False)
+        print("Acquisition stopped !")
         
         self.Signals = np.array(self.Signals)
         
@@ -105,7 +106,7 @@ class Acquisition:
         self.plot(self.Signals,self.timeStamps)
         
         self.recording_smell.set("Nothing")
-        print("Acquisition stopped !")
+        
         
     def create_file(self):
         col =["time"] + ["Electrode " + str(i+1) for i in range(len(self.Signals.T))]
@@ -125,11 +126,10 @@ class Acquisition:
         return path + 'subject_' + str(i-1) + '/'
     
     def plot(self,signals,time):
-        plt.figure()
+        fig, axs = plt.subplots(8, 1, constrained_layout=True,figsize=(5,7))
         for i,s in enumerate(signals.T) :
-            plt.plot(time,label="Electrode n°" + str(i+1))
-            plt.legend()
-            plt.show()
+            axs[i].plot(time,s)
+        plt.show()
 
         
     def addSignal(self,s):
@@ -149,6 +149,6 @@ def pull_sample_or_not(acqui):
 
 odors = ["smell " + str(i+1) for i in range(12)]
 root=Tk()
-acqui = Acquisition(root,odors,auto_Stop=True,acqui_time = 10)
+acqui = Acquisition(root,odors,auto_Stop=True,acqui_time = 3)
 root.after(1, lambda: pull_sample_or_not(acqui))
 root.mainloop()
