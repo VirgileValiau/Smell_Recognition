@@ -59,13 +59,3 @@ def plot(time,BPS):
 def energie(time,x):
     return intg.simps(np.abs(x)**2,time)
 
-df = pd.read_csv("../Smell_recognition/DATA/subject_18/smell 1.csv")
-BPS = toBandPower(df)
-time=np.array(df['time'])
-for elec in BPS:
-    E = []
-    for cut_s in elec:
-        E.append(energie(time,cut_s))
-    E=np.array(E)
-    plt.bar(range(5),height = E)
-    plt.show()
