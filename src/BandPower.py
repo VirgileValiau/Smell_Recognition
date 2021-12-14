@@ -33,7 +33,7 @@ def decomposition(x,time):
     delta = bandWith(W,f_signal,0.1,4)
     theta = bandWith(W,f_signal,4,8)
     alpha = bandWith(W,f_signal,8,12)
-    beta = bandWith(W,f_signal,12,30)
+    beta  = bandWith(W,f_signal,12,30)
     gamma = bandWith(W,f_signal,30,100)
     
     return [delta,theta,alpha,beta,gamma]
@@ -56,7 +56,7 @@ def plot(time,BPS):
             plt.plot(time,cut_s)
         plt.show()
         
-def energie(time,x):
+def energy(time,x):
     return intg.simps(np.abs(x)**2,time)
 
 def get_BPEnergy(BPS,df):
@@ -64,10 +64,10 @@ def get_BPEnergy(BPS,df):
     E_original_s = []
     BPEnergy = []
     for i,elec in enumerate(BPS):
-        E_original_s.append(energie(time,centering_and_normalize(df['Electrode '+str(i+1)])))
+        E_original_s.append(energy(time,centering_and_normalize(df['Electrode '+str(i+1)])))
         E_elec = []
         for cut_s in elec:
-            E_elec.append(energie(time,cut_s)/E_original_s[i])
+            E_elec.append(energy(time,cut_s)/E_original_s[i])
         BPEnergy.append(E_elec)
     return np.array(BPEnergy)
 
@@ -77,6 +77,49 @@ def meanEnergy(BPEnergy):
         means[i] = np.mean(wave)
     return means
 
+def varying_energy(x,time,nb_samples=10):
+    if nb_samples>=len(time):
+        print("nb_samples is too big, setting it to len(time)/2")
+        nb_samples=len(time)//2
+    step_time = np.max(time)/nb_samples
+    i=1
+    res=[]
+    done=False
+    step_size = len(time[time<step_time])
+    while not done:
+        sub_x = x[step_size*(i-1):step_size*i]
+        sub_time = time[step_size*(i-1):step_size*i]
+        res.append(energy(sub_time,sub_x))
+        i += 1
+        if step_time*i>np.max(time):
+            done=True
+    return res
+
+def BP_varying_energy(BPS,df,nb_samples=20):
+    time=df['time']
+    BPVE=[]
+    for elec_bps in BPS:
+        elecVE=[]
+        for wave in elec_bps:
+            elecVE.append(varying_energy(wave,time,nb_samples=nb_samples))
+        BPVE.append(elecVE)
+    return np.array(BPVE)
+def plot_bandPower_signal(BPS,df,electrode):
+    time=df['time']
+    fig, axs = plt.subplots(5, 1, constrained_layout=True,figsize=(10,8))
+    fig.suptitle("Band Power signals for electrode " + str(electrode),fontsize=30)    
+    for i,bandPower in enumerate(BPS[electrode-1]):
+        axs[i].plot(time,bandPower)
+
+def plot_raw_signal(df):
+    time=np.array(df['time'])
+    fig, axs = plt.subplots(8,1, constrained_layout=True,figsize=(10,8))
+    fig.suptitle('Raw Signals',fontsize = 30)
+    for i in range(8):
+        s = df['Electrode '+str(i+1)]
+        s = centering_and_normalize(s)
+        axs[i].plot(time,s)
+        
 def plot_bandPower_energy(BPEnergy):
     fig, axs = plt.subplots(4, 2, constrained_layout=True,figsize=(10,10))
     fig.suptitle("Band Power Energy",fontsize=30)
@@ -85,12 +128,3 @@ def plot_bandPower_energy(BPEnergy):
         axs[i//2][i%2].set_title('Electrode '+str(i+1))
     plt.show()
     
-def plot_raw_signal(df):
-    time=np.array(df['time'])
-
-    fig, axs = plt.subplots(8,1, constrained_layout=True,figsize=(10,8))
-    fig.suptitle('Raw Signals',fontsize = 30)
-    for i in range(8):
-        s = df['Electrode '+str(i+1)]
-        s = centering_and_normalize(s)
-        axs[i].plot(time,s)
