@@ -10,14 +10,14 @@ def toBandPower(EEG):
         delta (0.1,4)Hz, theta(4,8), alpha(8,12), beta(12,30), gamma(30,100)
 
     Args:
-        EEG (DataFrame): datafrmae containing the signals from the 8 electrodes and the time.
+        EEG (DataFrame): dataframe containing the signals from the 8 electrodes and the time.
     """
     
     time = EEG['time']
     Signal = []
     for i in range(8):
         s = np.array(EEG['Electrode ' + str(i+1)])
-        s = centering_and_normalise(s)
+        s = centering_and_normalize(s)
         Signal.append(s)
     
     #res = np.zeros((len(Signal),5,len(Signal[0])))
@@ -44,7 +44,7 @@ def bandWith(W,f_signal,f1,f2):
     cut_f[(W>f2)] = 0
     return irfft(cut_f)
 
-def centering_and_normalise(s):
+def centering_and_normalize(s):
     s = s-np.mean(s) # On centre le signal
     s = s/np.linalg.norm(s) # On normalise le signal 
     return s
@@ -59,3 +59,38 @@ def plot(time,BPS):
 def energie(time,x):
     return intg.simps(np.abs(x)**2,time)
 
+def get_BPEnergy(BPS,df):
+    time=df['time']
+    E_original_s = []
+    BPEnergy = []
+    for i,elec in enumerate(BPS):
+        E_original_s.append(energie(time,centering_and_normalize(df['Electrode '+str(i+1)])))
+        E_elec = []
+        for cut_s in elec:
+            E_elec.append(energie(time,cut_s)/E_original_s[i])
+        BPEnergy.append(E_elec)
+    return np.array(BPEnergy)
+
+def meanEnergy(BPEnergy):
+    means=np.zeros(5)
+    for i,wave in enumerate(BPEnergy.T):
+        means[i] = np.mean(wave)
+    return means
+
+def plot_bandPower_energy(BPEnergy):
+    fig, axs = plt.subplots(4, 2, constrained_layout=True,figsize=(10,10))
+    fig.suptitle("Band Power Energy",fontsize=30)
+    for i,E in enumerate(BPEnergy):
+        axs[i//2][i%2].bar(range(5),height = E,tick_label=['delta','theta','alpha','beta','gamma'])
+        axs[i//2][i%2].set_title('Electrode '+str(i+1))
+    plt.show()
+    
+def plot_raw_signal(df):
+    time=np.array(df['time'])
+
+    fig, axs = plt.subplots(8,1, constrained_layout=True,figsize=(10,8))
+    fig.suptitle('Raw Signals',fontsize = 30)
+    for i in range(8):
+        s = df['Electrode '+str(i+1)]
+        s = centering_and_normalize(s)
+        axs[i].plot(time,s)
