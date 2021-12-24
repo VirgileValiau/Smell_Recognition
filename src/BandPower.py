@@ -15,7 +15,7 @@ def toBandPower(EEG):
     
     time = EEG['time']
     Signal = []
-    for i in range(8):
+    for i in range(len(EEG.columns)-2):
         s = np.array(EEG['Electrode ' + str(i+1)])
         s = centering_and_normalize(s)
         Signal.append(s)
@@ -113,9 +113,9 @@ def plot_bandPower_signal(BPS,df,electrode):
 
 def plot_raw_signal(df):
     time=np.array(df['time'])
-    fig, axs = plt.subplots(8,1, constrained_layout=True,figsize=(10,8))
+    fig, axs = plt.subplots(len(df.columns)-2,1, constrained_layout=True,figsize=(10,8))
     fig.suptitle('Raw Signals',fontsize = 30)
-    for i in range(8):
+    for i in range(len(df.columns)-2):
         s = df['Electrode '+str(i+1)]
         s = centering_and_normalize(s)
         axs[i].plot(time,s)
