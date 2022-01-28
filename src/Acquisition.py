@@ -55,7 +55,7 @@ class Acquisition:
         
         for s in Smells:
             i=Smells.index(s)
-            ttk.Radiobutton(smells_selection, text=str(i+1)+". "+s, variable = self.selected, value = s).grid(column=i%4, row=i//4, sticky=W)
+            ttk.Radiobutton(smells_selection, text="smell "+s, variable = self.selected, value = s).grid(column=i%4, row=i//4, sticky=W)
         
         StartAndStop = ttk.Frame(mainframe,padding = "10 10 10 10")
         StartAndStop.grid(column=1,row=4,sticky=S)
@@ -147,7 +147,7 @@ def pull_sample_or_not(acqui):
 
 
 
-odors = ["smell " + str(i+1) for i in range(12)]
+odors = ["3","5","15","23","25","36","42","44","55","70"]
 root=Tk()
 acqui = Acquisition(root,odors,auto_Stop=True,acqui_time = 3)
 root.after(1, lambda: pull_sample_or_not(acqui))
