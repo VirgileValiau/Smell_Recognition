@@ -104,6 +104,7 @@ def BP_varying_energy(BPS,df,nb_samples=20):
             elecVE.append(varying_energy(wave,time,nb_samples=nb_samples))
         BPVE.append(elecVE)
     return np.array(BPVE)
+
 def plot_bandPower_signal(BPS,df,electrode):
     time=df['time']
     fig, axs = plt.subplots(5, 1, constrained_layout=True,figsize=(10,8))
