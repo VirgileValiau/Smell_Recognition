@@ -34,7 +34,7 @@ def decomposition(x,time):
     theta = bandWith(W,f_signal,4,8)
     alpha = bandWith(W,f_signal,8,12)
     beta  = bandWith(W,f_signal,12,30)
-    gamma = bandWith(W,f_signal,30,48)
+    gamma = bandWith(W,f_signal,30,45)
     
     return [delta,theta,alpha,beta,gamma]
     
