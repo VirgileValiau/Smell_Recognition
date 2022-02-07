@@ -17,7 +17,7 @@ def toBandPower(EEG):
     Signal = []
     for i in range(len(EEG.columns)-2):
         s = np.array(EEG['Electrode ' + str(i+1)])
-        s = centering_and_normalize(s)
+        #s = centering_and_normalize(s)
         Signal.append(s)
     
     #res = np.zeros((len(Signal),5,len(Signal[0])))
@@ -34,7 +34,7 @@ def decomposition(x,time):
     theta = bandWith(W,f_signal,4,8)
     alpha = bandWith(W,f_signal,8,12)
     beta  = bandWith(W,f_signal,12,30)
-    gamma = bandWith(W,f_signal,30,100)
+    gamma = bandWith(W,f_signal,30,48)
     
     return [delta,theta,alpha,beta,gamma]
     
@@ -64,7 +64,7 @@ def get_BPEnergy(BPS,df):
     E_original_s = []
     BPEnergy = []
     for i,elec in enumerate(BPS):
-        E_original_s.append(energy(time,centering_and_normalize(df['Electrode '+str(i+1)])))
+        E_original_s.append(energy(time,df['Electrode '+str(i+1)]))#centering_and_normalize(df['Electrode '+str(i+1)])))
         E_elec = []
         for cut_s in elec:
             E_elec.append(energy(time,cut_s)/E_original_s[i])
