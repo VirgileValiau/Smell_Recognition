@@ -30,7 +30,7 @@ def decomposition(x,time):
     W = fftfreq(x.size, d=time[1]-time[0])
     f_signal = rfft(x)
 
-    delta = bandWith(W,f_signal,0.1,4)
+    delta = bandWith(W,f_signal,0.5,4)
     theta = bandWith(W,f_signal,4,8)
     alpha = bandWith(W,f_signal,8,12)
     beta  = bandWith(W,f_signal,12,30)
@@ -91,7 +91,7 @@ def varying_energy(x,time,nb_samples=10):
         sub_time = time[step_size*(i-1):step_size*i]
         res.append(energy(sub_time,sub_x))
         i += 1
-        if step_time*i>np.max(time):
+        if i>nb_samples:
             done=True
     return res
 
@@ -118,7 +118,7 @@ def plot_raw_signal(df):
     fig.suptitle('Raw Signals',fontsize = 30)
     for i in range(len(df.columns)-2):
         s = df['Electrode '+str(i+1)]
-        s = centering_and_normalize(s)
+        #s = centering_and_normalize(s)
         axs[i].plot(time,s)
         
 def plot_bandPower_energy(BPEnergy):

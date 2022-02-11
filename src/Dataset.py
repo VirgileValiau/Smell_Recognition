@@ -28,14 +28,14 @@ def make_videos(data,nb_samples):
 def make_simple_image(data,nb_samples):
     PowerSpectrum = toBandPower(data)
     VE = BP_varying_energy(PowerSpectrum,data,nb_samples)
-    nb_elec,nb_waves,nb_samples = VE.shape
+    nb_elec,nb_waves,nb_samples2 = VE.shape
     img = np.zeros((nb_elec*nb_waves,nb_samples))
     for i in range(nb_elec):
         for j in range(nb_waves):
             img[i+j*nb_elec] = VE[i][j]
     return img
 
-def create_img_dataset(DATA,nb_samples,dir_name):
+def create_img_dataset(DATA,nb_samples):
     IMGS=[]
     labels = []
     for dir in glob.glob(DATA+'/*'):
@@ -44,9 +44,16 @@ def create_img_dataset(DATA,nb_samples,dir_name):
             data = pd.read_csv(file)
             img = make_simple_image(data,nb_samples)
             IMGS.append(img.reshape(-1))
-            labels.append(label)
+            labels.append(int(label))
             label += 1
+    name='imgs_dataset(40,'+str(nb_samples)+')'
+    export_img_dataset(np.array(IMGS),np.array(labels),name)
     return np.array(IMGS),np.array(labels)
+
+def export_img_dataset(imgs,labels,name):
+    df = pd.DataFrame(np.c_[labels.astype(int),imgs],columns=["labels"]+["pixel" + str(i) for i in range(imgs.shape[1])])
+    df.rename(columns = {0: 'labels'}, inplace = True)
+    df.to_csv('../Image_dataset/'+name+'.csv')
 
 def create_video_dataset(DATA):
     return ...
